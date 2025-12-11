@@ -1,0 +1,7 @@
+.venv
+__pycache__
+flower_sample_img
+output
+.env
+model/sam3.pt
+sam3
