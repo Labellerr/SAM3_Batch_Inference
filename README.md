@@ -105,7 +105,7 @@ from sam3_batch_inference import run_batch_inference
 
 # Configuration
 INPUT_FOLDER = "flower_sample_img"
-MODEL_CHECKPOINT = r"model\sam3.pt"
+MODEL_CHECKPOINT = "model/sam3.pt"
 TEXT_PROMPTS = [
     "Red Flower", 
     "Yellow Flower", 
@@ -153,7 +153,7 @@ CLIENT_ID = "your_client_id"
 from batch_upload_preannot import upload_preannotations
 
 PROJECT_ID = "your_project_id"
-ANNOTATION_DIR = r"SAM3_Results\flower_sample_img"
+ANNOTATION_DIR = "SAM3_Results/flower_sample_img"
 
 result = upload_preannotations(
     project_id=PROJECT_ID,
