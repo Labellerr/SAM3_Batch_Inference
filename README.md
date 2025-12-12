@@ -1,8 +1,8 @@
 # SAM3 Batch Inference
 
-[![Labellerr](https://img.shields.io/badge/Labellerr-BLOG-black.svg)](https://www.labellerr.com/blog)
+[![Labellerr](https://img.shields.io/badge/Labellerr-Website-green.svg)](https://www.labellerr.com/?utm_source=githubY&utm_medium=social&utm_campaign=github_clicks)
+[![Labellerr Blog](https://img.shields.io/badge/Labellerr-BLOG-black.svg)](https://www.labellerr.com/blog)
 [![Youtube](https://img.shields.io/badge/Labellerr-YouTube-b31b1b.svg)](https://www.youtube.com/@Labellerr)
-[![Github](https://img.shields.io/badge/Labellerr-GitHub-green.svg)](https://github.com/Labellerr/Hands-On-Learning-in-Computer-Vision)
 
 Perform batch inference on images using **SAM3 (Segment Anything Model v3)** with text prompts and export annotations in **COCO-JSON format**. Seamlessly upload results to [Labellerr](https://www.labellerr.com) for review and refinement.
 
