@@ -133,7 +133,9 @@ run_batch_inference(
 
 ---
 
-## 📤 Upload Annotations to Labellerr
+## 📤 Review Annotations on Labellerr
+
+The notebook provides a complete workflow to upload your SAM3 annotations to Labellerr for review and refinement.
 
 ### Step 1: Set Up Environment Variables
 
@@ -145,28 +147,126 @@ API_SECRET = "your_api_secret"
 CLIENT_ID = "your_client_id"
 ```
 
-> **Note:** Get these credentials from the Labellerr API tab in your dashboard.
+> **Note:** Get these credentials from the [Labellerr API tab](https://docs.labellerr.com/sdk/getting-started#getting-started) in your dashboard.
+>
+> **Important:** The notebook includes automatic validation to ensure all required environment variables (`CLIENT_ID`, `API_KEY`, `API_SECRET`) are properly loaded from the `.env` file. If any variable is missing or empty, you'll receive a clear error message indicating which credentials need to be configured.
 
-### Step 2: Upload Pre-annotations
+### Step 2: Configure Workflow Parameters
+
+Set up your dataset, template, and project names:
+
+```python
+# Path to SAM3 results folder
+ANNOTATION_DIR = "SAM3_Results/sample_img"
+
+# Labellerr resource names
+DATASET_NAME = "My_Labellerr_Dataset"
+TEMPLATE_NAME = "SDK SAM3 Batch Inference Template"
+PROJECT_NAME = "SDK SAM3 Review Project"
+```
+
+### Step 3: Create Annotation Template
+
+The notebook automatically creates an annotation template based on your `TEXT_PROMPTS`:
+
+```python
+from template_helper import create_questions_from_prompts
+from labellerr.core.annotation_templates import create_template
+
+# Creates annotation questions from your text prompts
+QUESTIONS = create_questions_from_prompts(TEXT_PROMPTS)
+
+template = create_template(
+    client=CLIENT,
+    params=CreateTemplateParams(
+        template_name=TEMPLATE_NAME,
+        data_type=DatasetDataType.image,
+        questions=QUESTIONS
+    )
+)
+```
+
+### Step 4: Create Dataset from Local Images
+
+Upload your images to Labellerr as a dataset:
+
+```python
+from labellerr.core.datasets import create_dataset_from_local
+
+dataset = create_dataset_from_local(
+    client=CLIENT,
+    dataset_config=DatasetConfig(
+        dataset_name=DATASET_NAME,
+        data_type="image"
+    ),
+    folder_to_upload=INPUT_FOLDER,
+)
+
+# Wait for dataset processing
+dataset.status()
+print("Dataset ID:", dataset.dataset_id)
+```
+
+### Step 5: Create Labellerr Project
+
+Create a project that combines your dataset and annotation template:
+
+```python
+from labellerr.core.projects import create_project
+
+project = create_project(
+    client=CLIENT,
+    params=CreateProjectParams(
+        project_name=PROJECT_NAME,
+        data_type=DatasetDataType.image,
+        rotations=RotationConfig(
+            annotation_rotation_count=1,
+            review_rotation_count=1,
+            client_review_rotation_count=1
+        )
+    ),
+    datasets=[dataset],
+    annotation_template=template
+)
+
+print("Created project with ID:", project.project_id)
+```
+
+### Step 6: Upload SAM3 Pre-Annotations
+
+Upload the SAM3 annotations to your Labellerr project:
 
 ```python
 from batch_upload_preannot import upload_preannotations
 
-PROJECT_ID = "your_project_id"
-ANNOTATION_DIR = "SAM3_Results/flower_sample_img"
-
 result = upload_preannotations(
-    project_id=PROJECT_ID,
+    project_id=project.project_id,
     annotation_format='coco_json',
     batch_annotation_dir=ANNOTATION_DIR
 )
 ```
 
+The upload process will display:
+
+- Total batch files to upload
+- Progress for each file
+- Success/failure status
+- Upload statistics (total batches, successful uploads, failed uploads, total time)
+
+### Step 7: Review on Labellerr UI
+
+Once pre-annotations are uploaded, visit the [Labellerr platform](https://www.labellerr.com) to:
+
+- Review SAM3 annotations
+- Refine segmentation masks
+- Fix any detection errors
+- Export corrected annotations
+
 ---
 
 ## 📁 Project Structure
 
-```
+```text
 SAM3_batch_inference/
 ├── model/                          # Store SAM3 model checkpoint here
 │   └── sam3.pt
@@ -175,6 +275,7 @@ SAM3_batch_inference/
 ├── SAM3_Results/                   # Output annotations
 ├── sam3_batch_inference.py         # Main inference script
 ├── batch_upload_preannot.py        # Labellerr upload script
+├── template_helper.py              # Helper for creating annotation templates
 ├── Labellerr_SAM3_Batch_Inference.ipynb  # Jupyter notebook
 ├── requirements.txt                # Python dependencies
 ├── INSTALLATION_GUIDE.md           # Detailed installation guide
@@ -229,6 +330,16 @@ Annotations are saved in COCO-JSON format:
 
 - Ensure the model checkpoint is downloaded to the `model/` folder
 - Verify the path in `MODEL_CHECKPOINT` is correct
+
+### Environment Variable Validation Errors
+
+If you see an error like `ValueError: Missing required environment variables: CLIENT_ID, API_KEY, API_SECRET`:
+
+- Verify the `.env` file exists in the same directory as the notebook
+- Check that variable names in `.env` match exactly: `CLIENT_ID`, `API_KEY`, `API_SECRET`
+- Ensure there are no extra spaces around the `=` sign in the `.env` file
+- Confirm the values are enclosed in quotes (e.g., `API_KEY = "your_key_here"`)
+- Try restarting the Jupyter kernel after creating/modifying the `.env` file
 
 ---
 
